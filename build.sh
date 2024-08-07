@@ -173,17 +173,42 @@ fi
 # Desativa o ambiente virtual
 deactivate
 
-# Instala o Ruby on Rails
+
+#!/bin/bash
+
+# Verifica se o Ruby on Rails está instalado
 if ! command -v rails &> /dev/null
 then
     echo "Ruby on Rails não encontrado. Instalando Ruby on Rails..."
+
+    # Atualiza a lista de pacotes
+    sudo apt update
+
+    # Instala o Ruby e suas dependências
     sudo apt install -y ruby-full
-    gem install rails
+
+    # Configura o RubyGems para instalar gems no diretório do usuário
+    gem install --user-install rails
+
+    # Adiciona o diretório local de gems ao PATH se ainda não estiver presente
+    GEMS_BIN_PATH=$(ruby -e "puts Gem.user_dir")/bin
+    if ! grep -q "$GEMS_BIN_PATH" ~/.bashrc; then
+        echo "Adicionando o diretório local de gems ao PATH..."
+        echo "export PATH=\"$GEMS_BIN_PATH:$PATH\"" >> ~/.bashrc
+        source ~/.bashrc
+    else
+        echo "Diretório local de gems já está no PATH."
+    fi
+
+    # Verifica se o Ruby on Rails foi instalado com sucesso
     if command -v rails &> /dev/null
     then
         echo "Ruby on Rails instalado com sucesso."
     else
         echo "Falha ao instalar Ruby on Rails."
+        echo "Verifique se o PATH está configurado corretamente."
+        echo "GEMS_BIN_PATH: $GEMS_BIN_PATH"
+        echo "PATH: $PATH"
         exit 1
     fi
 else
