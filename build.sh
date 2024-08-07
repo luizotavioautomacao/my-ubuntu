@@ -1,6 +1,9 @@
 #!/bin/bash
-echo "Iniciando instalação!"
+
 # chmod +x build.sh
+
+# Define o diretório do ambiente virtual
+VENV_DIR="$HOME/venv"
 
 # Atualiza o sistema
 sudo apt update
@@ -67,7 +70,7 @@ fi
 if ! command -v python3 &> /dev/null
 then
     echo "Python não encontrado. Instalando Python..."
-    sudo apt install -y python3
+    sudo apt install -y python3 python3-venv
     if command -v python3 &> /dev/null
     then
         echo "Python instalado com sucesso."
@@ -82,7 +85,7 @@ fi
 # Instala o pip para Python 3 se não estiver instalado
 if ! command -v pip3 &> /dev/null
 then
-    echo "pip não encontrado. Instalando pip..."
+    echo "Pip3 não encontrado. Instalando Pip3..."
     sudo apt install -y python3-pip
     if command -v pip3 &> /dev/null
     then
@@ -92,7 +95,13 @@ then
         exit 1
     fi
 else
-    echo "pip já está instalado."
+    echo "Pip3 já está instalado."
+fi
+
+# Verifica se o Python 3 e o módulo venv estão instalados
+if ! python3 -m venv --help &> /dev/null; then
+    echo "O módulo venv não está instalado. Instalando..."
+    sudo apt install -y python3-venv
 fi
 
 # Atualiza o PATH para incluir o diretório do Poetry
@@ -120,21 +129,51 @@ else
     echo "Poetry já está instalado."
 fi
 
-if ! command -v django-admin &> /dev/null
-then
+# Cria e ativa um ambiente virtual para Python
+# rm -rf $HOME/venv # Remove ambiente virtual
+if [ ! -d "$VENV_DIR" ]; then
+    echo "Criando ambiente virtual em $VENV_DIR..."
+    python3 -m venv "$VENV_DIR"
+fi
+
+# Verifica se o ambiente virtual foi criado com sucesso
+if [ ! -d "$VENV_DIR/bin" ]; then
+    echo "Falha ao criar o ambiente virtual."
+    exit 1
+fi
+
+# Verifica o conteúdo do diretório bin
+echo "Conteúdo do diretório $VENV_DIR/bin:"
+ls -l $VENV_DIR/bin
+
+echo "Ativando ambiente virtual..."
+source "$VENV_DIR/bin/activate"
+
+# Verifica se a ativação foi bem-sucedida
+if [ $? -ne 0 ]; then
+    echo "Falha ao ativar o ambiente virtual."
+    exit 1
+fi
+
+# Instala o Django dentro do ambiente virtual
+if ! command -v django-admin &> /dev/null; then
     echo "Django não encontrado. Instalando Django..."
     pip install django
-    if command -v django-admin &> /dev/null
-    then
+    if command -v django-admin &> /dev/null; then
         echo "Django instalado com sucesso."
     else
         echo "Falha ao instalar Django."
+        deactivate
         exit 1
     fi
 else
     echo "Django já está instalado."
 fi
 
+# Desativa o ambiente virtual
+deactivate
+
+# Instala o Ruby on Rails
 if ! command -v rails &> /dev/null
 then
     echo "Ruby on Rails não encontrado. Instalando Ruby on Rails..."
@@ -151,6 +190,7 @@ else
     echo "Ruby on Rails já está instalado."
 fi
 
+# Instala o Postman
 if ! command -v postman &> /dev/null
 then
     echo "Postman não encontrado. Instalando Postman..."
