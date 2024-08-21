@@ -190,6 +190,9 @@ then
     # Configura o RubyGems para instalar gems no diretório do usuário
     gem install --user-install rails
 
+    # Dependências
+    sudo apt-get install libyaml-dev
+
     # Adiciona o diretório local de gems ao PATH se ainda não estiver presente
     GEMS_BIN_PATH=$(ruby -e "puts Gem.user_dir")/bin
     if ! grep -q "$GEMS_BIN_PATH" ~/.bashrc; then

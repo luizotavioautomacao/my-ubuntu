@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Instala o Visual Studio Code
+if ! command -v code &> /dev/null
+then
+    echo "Visual Studio Code não encontrado. Instalando Visual Studio Code..."
+    sudo apt update
+    sudo apt install -y software-properties-common apt-transport-https
+    sudo sh -c 'wget -qO- https://packages.microsoft.com/keys/microsoft.asc | apt-key add -'
+    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+    sudo apt update
+    sudo apt install -y code
+    if command -v code &> /dev/null
+    then
+        echo "Visual Studio Code instalado com sucesso."
+    else
+        echo "Falha ao instalar Visual Studio Code."
+        exit 1
+    fi
+else
+    echo "Visual Studio Code já está instalado."
+fi
